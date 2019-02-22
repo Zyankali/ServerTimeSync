@@ -12,7 +12,7 @@ using Oxide.Game.Rust.Libraries;
 
 namespace Oxide.Plugins
 {
-    [Info("ServerTimeSync", "zyankali", "0.1.0")]
+    [Info("ServerTimeSync", "zyankali", "0.3.2")]
     [Description("Sync Server core time too ingame time")]
     public class ServerTimeSync : CovalencePlugin
     {
@@ -35,9 +35,7 @@ namespace Oxide.Plugins
         void OnServerInitialized(string[] args)
         {
 
-            int progressset;
-
-            progressset = 0;
+            int progressset = progressset = 1;
 
             server.Command("env.progresstime ", progressset);
 
@@ -45,18 +43,21 @@ namespace Oxide.Plugins
 
         void Unloaded(string[] args)
         {
-            int progressset;
-
-            progressset = 1;
+            int progressset = progressset = 1;
 
             server.Command("env.progresstime ", progressset);
         }
 
-        private void Init(string[] args)
+        // When a player joins the server switches from ingame time to Local Server core time and stops ingame time sight progress.
+        void OnPlayerConnected(Network.Message packet, string[] args)
         {
 
-            //Run timer avery realtime 20 seconds repeatitly
-            timer.Every(20f, () =>
+            int progressset = progressset = 0;
+            
+            server.Command("env.progresstime ", progressset);
+
+            //Run timer avery realtime 60 seconds repeatitly, turned out going lower isn´t neccessary
+            timer.Every(60f, () =>
             {
 
                 DateTime currentLocalTime = DateTime.Now;
@@ -65,20 +66,14 @@ namespace Oxide.Plugins
                 float minute = currentLocalTime.Minute;
                 float second = currentLocalTime.Second;
 
-                float a;
-                float b;
+                float a = minute / 60;
+                float b = second / 60;
 
-                float d;
-
-                a = minute / 60;
-                b = second / 60;
                 b = b * 0.01F;
 
-                d = (a + b);
+                float d = (a + b);
 
-                float e;
-
-                e = hour + d;
+                float e = hour + d;
 
                 string s = e.ToString(CultureInfo.InvariantCulture);
 
@@ -87,6 +82,14 @@ namespace Oxide.Plugins
                 Puts("New syncted realtime: env.time " + e);
 
             });
+
+            Puts("OnPlayerConnected works!");
+        }
+
+        private void Init(string[] args)
+        {
+
+            
 
         }
 
